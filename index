@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUAN 631 · Week 5 · Two-Variable Inference</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@500;600&display=swap');
+
+  :root {
+    --maroon: #6B1A2A;
+    --maroon-dark: #4A0F1C;
+    --maroon-light: rgba(107,26,42,0.07);
+    --gold: #C8952A;
+    --gold-light: rgba(200,149,42,0.10);
+    --cream: #FAF8F4;
+    --ink: #1C1410;
+    --ink-2: #4A4240;
+    --ink-3: #7A716E;
+    --ink-4: #B0A8A5;
+    --border: rgba(107,26,42,0.12);
+    --border-soft: rgba(0,0,0,0.06);
+    --surface: #FFFFFF;
+    --surface-2: #F7F3EE;
+    --success: #0F6E56;
+    --success-bg: rgba(15,110,86,0.08);
+    --danger: #A32D2D;
+    --danger-bg: rgba(163,45,45,0.08);
+    --info: #185FA5;
+    --info-bg: rgba(24,95,165,0.08);
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 2px 12px rgba(107,26,42,0.08);
+    --shadow-lg: 0 8px 32px rgba(107,26,42,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  .site-header {
+    background: var(--maroon);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .header-logo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1rem 1.5rem 1rem 0;
+    border-right: 1px solid rgba(255,255,255,0.15);
+    margin-right: 1.5rem;
+  }
+  .header-logo .wordmark {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+  .header-logo .sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+  .header-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+  }
+  .header-meta h1 {
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+  .header-meta .breadcrumb {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 1px;
+    letter-spacing: 0.02em;
+  }
+  .header-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+  .badge-gold {
+    background: var(--gold);
+    color: #fff;
+  }
+  .badge-outline {
+    border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* ── Layout ──────────────────────────────────────────── */
+  .layout {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  /* ── Sidebar Nav ─────────────────────────────────────── */
+  .sidebar {
+    position: sticky;
+    top: 72px;
+  }
+  .sidebar-nav {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .sidebar-section {
+    padding: 0.75rem 1rem 0.5rem;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--ink-4);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--surface-2);
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    color: var(--ink-2);
+    font-size: 13px;
+  }
+  .nav-item:hover { background: var(--maroon-light); }
+  .nav-item.active {
+    background: var(--maroon-light);
+    border-left-color: var(--maroon);
+    color: var(--maroon);
+    font-weight: 500;
+  }
+  .nav-item .nav-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--ink-3);
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .nav-item.active .nav-num {
+    background: var(--maroon);
+    color: #fff;
+  }
+  .sidebar-progress {
+    padding: 1rem;
+    border-top: 1px solid var(--border-soft);
+  }
+  .progress-label {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .progress-track {
+    height: 4px;
+    background: var(--surface-2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--maroon);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 20%;
+  }
+
+  /* ── Main Content ─────────────────────────────────────── */
+  .main-content { min-width: 0; }
+
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+
+  .section-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .section-desc {
+    font-size: 14px;
+    color: var(--ink-3);
+    line-height: 1.6;
+  }
+
+  /* ── Scenario Box ────────────────────────────────────── */
+  .scenario {
+    background: var(--gold-light);
+    border: 1px solid rgba(200,149,42,0.2);
+    border-left: 4px solid var(--gold);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--ink-2);
+  }
+  .scenario strong { color: var(--ink); font-weight: 600; }
+
+  /* ── Tab System ──────────────────────────────────────── */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    padding: 8px 16px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink-3);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    margin-bottom: -1px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab-btn:hover { color: var(--maroon); }
+  .tab-btn.active {
+    color: var(--maroon);
+    border-bottom-color: var(--maroon);
+    font-weight: 600;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.15s ease; }
+
+  /* ── Cards ───────────────────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: var(--maroon);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+
+  /* ── Stat Cards ──────────────────────────────────────── */
+  .stat-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: 0.875rem 1rem;
+    text-align: center;
+  }
+  .stat-label { font-size: 10px; color: var(--ink-4); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+  .stat-value { font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.1; }
+  .stat-sub { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+
+  /* ── Formula / Code ──────────────────────────────────── */
+  .formula {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    background: #1C1410;
+    color: #F0EBE3;
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    line-height: 1.75;
+    overflow-x: auto;
+  }
+  .formula .comment { color: #8A7D6A; }
+  .formula .key { color: #C8952A; }
+  .formula .val { color: #7ABCF0; }
+  .formula .res { color: #7FC9A0; }
+
+  /* ── Result Boxes ────────────────────────────────────── */
+  .result {
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+  .result p + p { margin-top: 0.5rem; }
+  .result.reject { background: var(--danger-bg); border-left: 4px solid var(--danger); color: var(--ink-2); }
+  .result.reject strong { color: var(--danger); }
+  .result.pass { background: var(--success-bg); border-left: 4px solid var(--success); color: var(--ink-2); }
+  .result.pass strong { color: var(--success); }
+  .result.info { background: var(--info-bg); border-left: 4px solid var(--info); color: var(--ink-2); }
+  .result.info strong { color: var(--info); }
+  .result.gold { background: var(--gold-light); border-left: 4px solid var(--gold); color: var(--ink-2); }
+  .result.gold strong { color: #8B5E10; }
+
+  /* ── Tables ──────────────────────────────────────────── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .data-table th {
+    text-align: left;
+    padding: 7px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--ink-2);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr.hl { background: var(--maroon-light); }
+  .data-table td.num { font-weight: 600; color: var(--ink); font-family: 'DM Mono', monospace; font-size: 12px; }
+  .data-table td.good { color: var(--success); font-weight: 600; }
+  .data-table td.bad { color: var(--danger); font-weight: 600; }
+  .data-table td.muted { color: var(--ink-3); font-size: 11px; }
+
+  /* ── Controls ────────────────────────────────────────── */
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0.875rem;
+    flex-wrap: wrap;
+  }
+  .control-group label {
+    font-size: 12px;
+    color: var(--ink-3);
+    min-width: 110px;
+    font-weight: 500;
+  }
+  .control-group input[type=range] {
+    flex: 1;
+    min-width: 120px;
+    accent-color: var(--maroon);
+    cursor: pointer;
+  }
+  .control-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--maroon);
+    font-family: 'DM Mono', monospace;
+    min-width: 70px;
+    text-align: right;
+  }
+
+  /* ── Charts ──────────────────────────────────────────── */
+  .chart-box {
+    width: 100%;
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Steps ───────────────────────────────────────────── */
+  .step {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 1rem;
+    align-items: flex-start;
+  }
+  .step-num {
+    min-width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--maroon);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-body { font-size: 13.5px; color: var(--ink-2); line-height: 1.65; }
+  .step-body strong { color: var(--ink); font-weight: 600; }
+
+  /* ── CI Visualizer ───────────────────────────────────── */
+  .ci-track {
+    position: relative;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    margin: 1rem 0;
+  }
+  .ci-zero {
+    position: absolute;
+    height: 100%;
+    width: 1px;
+    background: var(--ink-4);
+    left: 30%;
+  }
+  .ci-zero-label {
+    position: absolute;
+    font-size: 10px;
+    color: var(--ink-3);
+    left: 30%;
+    top: 0;
+    transform: translateX(-50%);
+  }
+  .ci-bar-track {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    height: 6px;
+    background: var(--border-soft);
+    border-radius: 3px;
+  }
+  .ci-bar-fill {
+    position: absolute;
+    height: 100%;
+    background: var(--maroon);
+    opacity: 0.3;
+    border-radius: 3px;
+  }
+  .ci-point {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--maroon);
+    transform: translate(-50%, -50%);
+    top: 50%;
+  }
+  .ci-tick {
+    position: absolute;
+    width: 2px;
+    height: 16px;
+    background: var(--maroon);
+    transform: translateX(-50%);
+    top: calc(50% - 8px);
+  }
+  .ci-label {
+    position: absolute;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: var(--maroon);
+    bottom: 0;
+    transform: translateX(-50%);
+  }
+
+  /* ── Donut/Bar effect ────────────────────────────────── */
+  .effect-bar {
+    height: 28px;
+    background: var(--surface-2);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+    position: relative;
+  }
+  .effect-fill {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    transition: width 0.6s ease;
+  }
+  .effect-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--ink-4);
+    margin-top: 3px;
+  }
+
+  /* ── Run Button ──────────────────────────────────────── */
+  .run-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    background: var(--maroon);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 1rem;
+  }
+  .run-btn:hover { background: var(--maroon-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(107,26,42,0.25); }
+
+  /* ── Quiz ────────────────────────────────────────────── */
+  .quiz-q {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    line-height: 1.55;
+  }
+  .quiz-num {
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .quiz-opts { display: flex; flex-direction: column; gap: 7px; margin-bottom: 1rem; }
+  .quiz-opt-btn {
+    text-align: left;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-2);
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.45;
+  }
+  .quiz-opt-btn:hover:not(:disabled) { border-color: var(--maroon); background: var(--maroon-light); color: var(--maroon); }
+  .quiz-opt-btn.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); font-weight: 600; }
+  .quiz-opt-btn.wrong { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+  .quiz-feedback {
+    font-size: 13px;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    padding: 0.875rem 1rem;
+    border-left: 3px solid var(--gold);
+    line-height: 1.6;
+    display: none;
+    margin-top: 0.75rem;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-score-box {
+    text-align: center;
+    padding: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: none;
+  }
+  .score-big { font-size: 56px; font-weight: 700; color: var(--maroon); font-family: 'Playfair Display', serif; }
+  .score-sub { font-size: 15px; color: var(--ink-2); margin-top: 8px; }
+
+  /* ── Horizontal region bars ──────────────────────────── */
+  .region-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+  .region-legend span { display: flex; align-items: center; gap: 5px; }
+  .dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── Responsive ──────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; padding: 1rem; }
+    .sidebar { position: static; }
+    .sidebar-nav { display: flex; flex-wrap: wrap; border-radius: var(--radius); }
+    .sidebar-section { display: none; }
+    .nav-item { flex: 1; min-width: 130px; border-left: none; border-bottom: 2px solid transparent; padding: 0.6rem 0.75rem; }
+    .nav-item.active { border-bottom-color: var(--maroon); border-left: none; }
+    .sidebar-progress { display: none; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-4 { grid-template-columns: repeat(2,1fr); }
+    .header-inner { padding: 0 1rem; }
+    .header-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo">
+      <div class="wordmark">University of Redlands</div>
+      <div class="sub">School of Business</div>
+    </div>
+    <div class="header-meta">
+      <h1>Two-Variable Inference &amp; Comparison</h1>
+      <div class="breadcrumb">BUAN 631 · Business Analytics · Week 5 · Due June 7</div>
+    </div>
+    <div class="header-badge">
+      <span class="badge badge-gold">Graduate</span>
+      <span class="badge badge-outline">50 pts</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── Sidebar ───────────────────────────────────────── -->
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">Module Sections</div>
+      <div class="nav-item active" onclick="showSection('s1',this)">
+        <div class="nav-num">1</div>
+        Two-Sample t-Test
+      </div>
+      <div class="nav-item" onclick="showSection('s2',this)">
+        <div class="nav-num">2</div>
+        Paired t-Test
+      </div>
+      <div class="nav-item" onclick="showSection('s3',this)">
+        <div class="nav-num">3</div>
+        Chi-Square
+      </div>
+      <div class="nav-item" onclick="showSection('s4',this)">
+        <div class="nav-num">4</div>
+        One-Way ANOVA
+      </div>
+      <div class="nav-item" onclick="showSection('s5',this)">
+        <div class="nav-num">✓</div>
+        Concepts &amp; Quiz
+      </div>
+      <div class="sidebar-progress">
+        <div class="progress-label">
+          <span>Progress</span>
+          <span id="prog-pct">1 / 5</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="prog-fill"></div>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ── Main ──────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- ════ SECTION 1: Two-Sample t ════ -->
+    <div id="s1" class="section active">
+      <div class="section-header">
+        <div class="section-eyebrow">Part 1 · Week 5 · 20 Points</div>
+        <h2 class="section-title">Two-Sample t-Test</h2>
+        <p class="section-desc">Compare Customer Lifetime Value across independent marketing channels. Is digital marketing producing meaningfully different customer value?</p>
+      </div>
+
+      <div class="scenario">
+        <strong>Business scenario:</strong> Your company acquires customers via <em>traditional advertising</em> (TV, radio, print) and <em>digital marketing</em> (social media, search, email). A random sample of n=40 per channel was collected. You must determine if mean CLV differs significantly between channels.
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('s1','explore',this)">Explore Data</button>
+        <button class="tab-btn" onclick="showTab('s1','hypothesis',this)">Hypothesis Test</button>
+        <button class="tab-btn" onclick="showTab('s1','simulator',this)">Live Simulator</button>
+        <button class="tab-btn" onclick="showTab('s1','business',this)">Business Insight</button>
+      </div>
+
+      <!-- Explore -->
+      <div id="s1-explore" class="tab-panel active">
+        <div class="grid-4">
+          <div class="stat-card">
+            <div class="stat-label">Traditional mean</div>
+            <div class="stat-value">$3,093</div>
+            <div class="stat-sub">n = 40</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Digital mean</div>
+            <div class="stat-value" style="color:var(--maroon)">$3,343</div>
+            <div class="stat-sub">n = 40</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Trad std dev</div>
+            <div class="stat-value">$249</div>
+            <div class="stat-sub">CV = 8.1%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Digital std dev</div>
+            <div class="stat-value">$249</div>
+            <div class="stat-sub">CV = 7.4%</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Distribution comparison — CLV by channel</div>
+          <div class="chart-box" style="height:240px">
+            <canvas id="c-scatter" role="img" aria-label="Scatter plot of CLV distributions for traditional and digital marketing channels. Digital is shifted higher by approximately $250.">Traditional centered around $3,093; Digital centered around $3,343.</canvas>
+          </div>
+          <div class="region-legend">
+            <span><span class="dot" style="background:rgba(107,26,42,0.65)"></span>Traditional (scatter)</span>
+            <span><span class="dot" style="background:rgba(200,149,42,0.7)"></span>Digital (scatter)</span>
+            <span><span class="dot" style="background:#6B1A2A;border-radius:50%"></span>Group means</span>
+          </div>
+        </div>
+
+        <div class="result gold">
+          <p><strong>Initial observation:</strong> The digital channel distribution sits roughly $250 higher than traditional. Both groups show nearly identical spread (SD≈$249), strongly suggesting equal variances — validating the pooled t-test approach. The digital minimum ($2,900) is near the traditional mean, implying substantial separation between distributions.</p>
+        </div>
+      </div>
+
+      <!-- Hypothesis -->
+      <div id="s1-hypothesis" class="tab-panel">
+        <div class="card">
+          <div class="card-title">Hypothesis framework</div>
+          <div class="formula">
+<span class="comment"># Formal hypotheses (two-tailed, α = 0.05)</span>
+<span class="key">H₀:</span> <span class="val">μ_digital = μ_traditional</span>   <span class="comment"># No difference in mean CLV</span>
+<span class="key">Hₐ:</span> <span class="val">μ_digital ≠ μ_traditional</span>   <span class="comment"># Two-tailed: detect any direction</span>
+
+<span class="comment"># Assumption check: Levene's test → p = 0.98 (equal variances)</span>
+<span class="key">from</span> scipy.stats <span class="key">import</span> ttest_ind, levene
+stat, p = ttest_ind(digital_clv, traditional_clv, equal_var=<span class="res">True</span>)
+ci = ConfidenceInterval(stat, df=<span class="val">78</span>, alpha=<span class="val">0.05</span>)</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Test results</div>
+            <table class="data-table">
+              <tr><td>t-statistic</td><td class="num">−5.02</td></tr>
+              <tr><td>p-value</td><td class="num bad">0.0000033</td></tr>
+              <tr><td>Degrees of freedom</td><td class="num">78</td></tr>
+              <tr><td>α (significance level)</td><td class="num">0.05</td></tr>
+              <tr class="hl"><td><strong>Decision</strong></td><td class="bad"><strong>Reject H₀</strong></td></tr>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-title">95% Confidence interval — Δμ</div>
+            <p style="font-size:12px;color:var(--ink-3);margin-bottom:6px">Difference in means: Digital − Traditional</p>
+            <div class="ci-track">
+              <div class="ci-bar-track">
+                <div class="ci-bar-fill" style="left:30%;right:10%"></div>
+              </div>
+              <div class="ci-zero"></div>
+              <div class="ci-zero-label">$0</div>
+              <div class="ci-tick" style="left:37%"></div>
+              <div class="ci-point" style="left:62%"></div>
+              <div class="ci-tick" style="left:82%"></div>
+              <div class="ci-label" style="left:37%">$149</div>
+              <div class="ci-label" style="left:62%">$250</div>
+              <div class="ci-label" style="left:82%">$350</div>
+            </div>
+            <p style="font-size:12px;color:var(--ink-3);text-align:center;margin-top:8px">CI = [$149, $350] — entirely excludes $0</p>
+          </div>
+        </div>
+
+        <div class="result reject">
+          <p><strong>Statistical conclusion:</strong> With t(78) = −5.02 and p = 0.0000033, we reject H₀ at α = 0.05. There is overwhelming statistical evidence that digital marketing customers have higher mean CLV than traditional advertising customers.</p>
+          <p>The 95% CI [$149, $350] excludes $0, consistent with the hypothesis test result. We are 95% confident the true difference in mean CLV is between $149 and $350 per customer.</p>
+        </div>
+      </div>
+
+      <!-- Simulator -->
+      <div id="s1-simulator" class="tab-panel">
+        <div class="card">
+          <div class="card-title">Interactive two-sample t simulator</div>
+          <p style="font-size:12.5px;color:var(--ink-3);margin-bottom:1.25rem">Adjust parameters in real time to see how the test statistic and conclusion change.</p>
+
+          <div class="control-group">
+            <label>Group A mean</label>
+            <input type="range" id="sim-mu1" min="2800" max="3800" value="3093" step="10" oninput="updateSim()">
+            <span class="control-val" id="sim-mu1-v">$3,093</span>
+          </div>
+          <div class="control-group">
+            <label>Group B mean</label>
+            <input type="range" id="sim-mu2" min="2800" max="3800" value="3343" step="10" oninput="updateSim()">
+            <span class="control-val" id="sim-mu2-v">$3,343</span>
+          </div>
+          <div class="control-group">
+            <label>Sample size (n)</label>
+            <input type="range" id="sim-n" min="5" max="150" value="40" step="1" oninput="updateSim()">
+            <span class="control-val" id="sim-n-v">40</span>
+          </div>
+          <div class="control-group">
+            <label>Std deviation</label>
+            <input type="range" id="sim-sd" min="50" max="700" value="249" step="10" oninput="updateSim()">
+            <span class="control-val" id="sim-sd-v">$249</span>
+          </div>
+
+          <div class="grid-4">
+            <div class="stat-card"><div class="stat-label">t-statistic</div><div class="stat-value" id="sim-t-out">−5.02</div></div>
+            <div class="stat-card"><div class="stat-label">p-value</div><div class="stat-value" id="sim-p-out" style="font-size:16px;color:var(--danger)">0.000003</div></div>
+            <div class="stat-card"><div class="stat-label">Cohen's d</div><div class="stat-value" id="sim-d-out">1.00</div></div>
+            <div class="stat-card"><div class="stat-label">Decision</div><div class="stat-value" id="sim-dec-out" style="font-size:15px;color:var(--danger)">Reject H₀</div></div>
+          </div>
+
+          <div class="chart-box" style="height:180px">
+            <canvas id="c-tdist" role="img" aria-label="t distribution with critical regions shaded red and observed test statistic marked as a vertical dashed line.">Sampling distribution showing rejection regions at alpha = 0.05.</canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Business -->
+      <div id="s1-business" class="tab-panel">
+        <div class="scenario">
+          <strong>Plain-language memo to Marketing Director:</strong> Our analysis of 80 customers (40 per channel) provides strong statistical evidence that digital marketing generates higher customer lifetime value. We are 95% confident the advantage is between $149 and $350 per customer.
+        </div>
+        <div class="card">
+          <div class="card-title">Practical significance at scale</div>
+          <table class="data-table">
+            <thead><tr><th>Metric</th><th>Traditional</th><th>Digital</th><th>Difference</th></tr></thead>
+            <tbody>
+              <tr><td>Mean CLV</td><td class="num">$3,093</td><td class="num">$3,343</td><td class="num good">+$250</td></tr>
+              <tr><td>At 10,000 customers</td><td class="num">$30.9M</td><td class="num">$33.4M</td><td class="num good">+$2.5M</td></tr>
+              <tr><td>At 50,000 customers</td><td class="num">$154.7M</td><td class="num">$167.2M</td><td class="num good">+$12.5M</td></tr>
+              <tr class="hl"><td>Cohen's d (effect size)</td><td colspan="2" class="muted">≈ 1.00 — large effect by convention</td><td class="good">Practically meaningful</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="result info">
+          <p><strong>Recommendation:</strong> Shift acquisition budget toward digital channels. At scale (10K customers), the $250 CLV advantage represents $2.5M incremental revenue — almost certainly exceeding marginal digital media costs.</p>
+          <p><strong>Caution:</strong> Correlation ≠ causation. Customer self-selection into channels may explain part of the difference. A randomized A/B acquisition experiment would isolate the causal effect before committing to major budget reallocation.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ SECTION 2: Paired t ════ -->
+    <div id="s2" class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">Part 2 · 20 Points</div>
+        <h2 class="section-title">Paired t-Test</h2>
+        <p class="section-desc">Evaluate sales training program effectiveness using dependent samples — the same 30 salespeople measured before and after.</p>
+      </div>
+
+      <div class="scenario">
+        <strong>Business scenario:</strong> A $500/person sales training was deployed. Monthly sales ($000s) were recorded for 30 salespeople before and after training. The fundamental methodological question: <em>why must we treat these as paired observations rather than two independent groups?</em>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('s2','why',this)">Why Pairing Matters</button>
+        <button class="tab-btn" onclick="showTab('s2','analysis',this)">Paired Analysis</button>
+        <button class="tab-btn" onclick="showTab('s2','compare',this)">vs. Independent t</button>
+        <button class="tab-btn" onclick="showTab('s2','roi',this)">ROI Decision</button>
+      </div>
+
+      <!-- Why -->
+      <div id="s2-why" class="tab-panel active">
+        <div class="card">
+          <div class="card-title">The pairing principle — intuition first</div>
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><strong>Between-person variation dominates.</strong> Salesperson A naturally sells $46K/mo; Person B sells $38K/mo. This spread reflects territories, experience, and talent — it is irrelevant noise when asking "did training work?" An independent t-test mixes this noise into its error term.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><strong>Differencing eliminates the noise.</strong> Comparing each person's after minus their before (d_i = after_i − before_i) cancels individual baseline effects. The analysis focuses purely on within-person change — the quantity we actually care about.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><strong>Statistical consequence: higher power.</strong> Pairing reduces σ_diff compared to σ_pooled. When the pre-post correlation r is high (common for human performance data), the efficiency gain is 1/(1−r²). At r = 0.8, pairing is 2.78× more powerful than an independent t-test with the same n.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Before-after trajectories — all 30 salespeople</div>
+          <div class="chart-box" style="height:220px">
+            <canvas id="c-paired" role="img" aria-label="Line chart showing each of 30 salespeople's sales before and after training. All lines trend upward by exactly 3 units.">Every salesperson improved by $3K after training — lines are parallel and upward sloping.</canvas>
+          </div>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:-4px">Each line = one salesperson. Near-perfect consistency signals a systematic training effect, not random variation.</div>
+        </div>
+      </div>
+
+      <!-- Analysis -->
+      <div id="s2-analysis" class="tab-panel">
+        <div class="grid-4">
+          <div class="stat-card"><div class="stat-label">Before mean</div><div class="stat-value">$41.8K</div><div class="stat-sub">SD = $2.54K</div></div>
+          <div class="stat-card"><div class="stat-label">After mean</div><div class="stat-value">$44.8K</div><div class="stat-sub">SD = $2.54K</div></div>
+          <div class="stat-card"><div class="stat-label">Mean diff (d̄)</div><div class="stat-value" style="color:var(--success)">+$3.0K</div><div class="stat-sub">SE_diff = 0</div></div>
+          <div class="stat-card"><div class="stat-label">% improved</div><div class="stat-value" style="color:var(--success)">100%</div><div class="stat-sub">30 / 30</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Paired t-test results</div>
+          <div class="formula">
+<span class="comment"># One-tailed test: training should improve sales</span>
+<span class="key">H₀:</span> <span class="val">μ_diff = 0</span>   <span class="comment"># Training has no effect</span>
+<span class="key">Hₐ:</span> <span class="val">μ_diff > 0</span>   <span class="comment"># Training increases sales (one-tailed)</span>
+
+t_stat, p_val = scipy.stats.ttest_rel(sales_after, sales_before)
+<span class="comment"># Result: t → ∞  (SD_diff = 0),  p < 0.0001</span>
+<span class="comment"># 95% CI for mean difference: [$3.00K, $3.00K]</span></div>
+          <div class="result reject">
+            <p><strong>Statistical conclusion:</strong> We reject H₀. The training produces a statistically significant improvement in monthly sales. Every salesperson improved by exactly $3K — the variance of differences is zero, making t → ∞ and p → 0.</p>
+            <p><strong>Note for real data:</strong> In practice, individual responses vary. The paired t-test remains appropriate regardless; the test simply has a finite t-statistic when SD_diff > 0.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compare -->
+      <div id="s2-compare" class="tab-panel">
+        <div class="card">
+          <div class="card-title">Paired vs. independent samples — what actually changes</div>
+          <table class="data-table">
+            <thead><tr><th>Feature</th><th>Paired t (correct)</th><th>Independent t (wrong)</th></tr></thead>
+            <tbody>
+              <tr><td>Unit of analysis</td><td class="good">Differences: after − before</td><td class="bad">Two separate group scores</td></tr>
+              <tr><td>Removes between-person noise</td><td class="good">✓ Yes — by design</td><td class="bad">✗ No — inflates error term</td></tr>
+              <tr><td>Error term (denominator)</td><td>SD of d_i values</td><td>Pooled SD of both groups</td></tr>
+              <tr><td>Degrees of freedom</td><td class="num">n − 1 = 29</td><td class="num">2n − 2 = 58</td></tr>
+              <tr class="hl"><td>Statistical power</td><td class="good">Higher ↑ (when r &gt; 0)</td><td class="bad">Lower ↓</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Efficiency gain from pairing as a function of correlation</div>
+          <p style="font-size:12.5px;color:var(--ink-3);margin-bottom:1rem">Relative efficiency = 1 / (1 − r²). Drag the slider to see impact.</p>
+          <div class="control-group">
+            <label>Pre-post correlation r</label>
+            <input type="range" id="corr-r" min="-9" max="9" value="8" step="1" oninput="updateCorr()">
+            <span class="control-val" id="corr-r-v">r = 0.8</span>
+          </div>
+          <div class="effect-bar">
+            <div class="effect-fill" id="eff-bar" style="width:80%;background:var(--maroon)">+178% efficiency</div>
+          </div>
+          <div class="effect-labels"><span>r = −1.0 (pairing hurts)</span><span>r = 0</span><span>r = +1.0 (maximum gain)</span></div>
+        </div>
+
+        <div class="result gold">
+          <p><strong>Key insight:</strong> For business performance data (sales, engagement, retention), pre-post correlations of 0.7–0.9 are typical. At r = 0.8, the paired design is 2.78× more efficient than independent samples. This means you need far fewer subjects to achieve equivalent power — or far more power with the same n.</p>
+        </div>
+      </div>
+
+      <!-- ROI -->
+      <div id="s2-roi" class="tab-panel">
+        <div class="card">
+          <div class="card-title">Interactive ROI calculator — training program rollout</div>
+          <div class="control-group">
+            <label>Improvement ($K/mo)</label>
+            <input type="range" id="roi-imp" min="0.5" max="10" value="3" step="0.5" oninput="updateROI()">
+            <span class="control-val" id="roi-imp-v">$3K</span>
+          </div>
+          <div class="control-group">
+            <label>Training cost / person</label>
+            <input type="range" id="roi-cost" min="100" max="3000" value="500" step="100" oninput="updateROI()">
+            <span class="control-val" id="roi-cost-v">$500</span>
+          </div>
+          <div class="control-group">
+            <label>Rollout size</label>
+            <input type="range" id="roi-n" min="50" max="1000" value="500" step="50" oninput="updateROI()">
+            <span class="control-val" id="roi-n-v">500 people</span>
+          </div>
+
+          <div class="grid-4">
+            <div class="stat-card"><div class="stat-label">Total invest.</div><div class="stat-value" id="roi-tot-cost" style="font-size:18px">$250K</div></div>
+            <div class="stat-card"><div class="stat-label">Monthly gain</div><div class="stat-value" id="roi-mo-gain" style="font-size:18px;color:var(--success)">$1.5M</div></div>
+            <div class="stat-card"><div class="stat-label">Break-even</div><div class="stat-value" id="roi-be" style="font-size:18px">0.17 mo</div></div>
+            <div class="stat-card"><div class="stat-label">12-mo net</div><div class="stat-value" id="roi-net" style="font-size:18px;color:var(--success)">$17.75M</div></div>
+          </div>
+        </div>
+        <div class="result pass">
+          <p><strong>Recommendation: Roll out to all 500 salespeople immediately.</strong> Even using the most conservative scenario ($3K improvement, $500 cost), break-even occurs in under one month. The 12-month net return of $17.75M dwarfs the $250K investment by a factor of 71×. Statistical confidence is essentially absolute (p &lt; 0.0001).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ SECTION 3: Chi-Square ════ -->
+    <div id="s3" class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">Part 3 · 15 Points</div>
+        <h2 class="section-title">Chi-Square Test</h2>
+        <p class="section-desc">Test whether customer product preferences are independent of geographic region — a critical question for regional marketing strategy.</p>
+      </div>
+
+      <div class="scenario">
+        <strong>Business scenario:</strong> 450 customers across 3 regions (North, South, West) expressed preferences for Economy, Standard, or Premium product variants. Does region drive product preference, or are the patterns consistent nationwide?
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('s3','concept',this)">Independence Concept</button>
+        <button class="tab-btn" onclick="showTab('s3','tables',this)">Observed vs. Expected</button>
+        <button class="tab-btn" onclick="showTab('s3','result',this)">Test Results</button>
+        <button class="tab-btn" onclick="showTab('s3','strategy',this)">Regional Strategy</button>
+      </div>
+
+      <!-- Concept -->
+      <div id="s3-concept" class="tab-panel active">
+        <div class="card">
+          <div class="card-title">What does statistical independence mean here?</div>
+          <div class="step">
+            <div class="step-num">H₀</div>
+            <div class="step-body"><strong>Independence:</strong> Knowing a customer's region gives no information about their product preference. The proportion choosing Premium is the same in North, South, and West. A uniform national product strategy is optimal.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">Hₐ</div>
+            <div class="step-body"><strong>Dependence / Association:</strong> Some regions systematically prefer Premium; others favor Economy. Regional marketing and inventory strategies should differ to match local preferences.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">The chi-square logic</div>
+          <div class="formula">
+<span class="comment"># What would frequencies look like if NOTHING differed by region?</span>
+E_ij = (Row_total_i × Col_total_j) / Grand_total
+
+<span class="key">χ²</span> = Σ <span class="val">(Observed − Expected)²</span> / Expected
+
+<span class="comment"># Large χ² → observed deviations unlikely under H₀ → reject independence</span>
+χ², p, dof, expected = scipy.stats.chi2_contingency(preference_data)
+<span class="comment"># Effect size: Cramér's V = √(χ² / (n × min(r−1, c−1)))</span></div>
+        </div>
+      </div>
+
+      <!-- Tables -->
+      <div id="s3-tables" class="tab-panel">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Observed frequencies</div>
+            <table class="data-table">
+              <thead><tr><th>Region</th><th>Economy</th><th>Standard</th><th>Premium</th><th>Total</th></tr></thead>
+              <tbody>
+                <tr><td>North</td><td class="num">52</td><td class="num">63</td><td class="num bad">35</td><td class="num">150</td></tr>
+                <tr><td>South</td><td class="num">48</td><td class="num">58</td><td class="num">44</td><td class="num">150</td></tr>
+                <tr><td>West</td><td class="num">45</td><td class="num">54</td><td class="num good">51</td><td class="num">150</td></tr>
+                <tr class="hl"><td><strong>Total</strong></td><td class="num">145</td><td class="num">175</td><td class="num">130</td><td class="num">450</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-title">Expected frequencies (if H₀ true)</div>
+            <table class="data-table">
+              <thead><tr><th>Region</th><th>Economy</th><th>Standard</th><th>Premium</th></tr></thead>
+              <tbody>
+                <tr><td>North</td><td class="num">48.3</td><td class="num">58.3</td><td class="num">43.3</td></tr>
+                <tr><td>South</td><td class="num">48.3</td><td class="num">58.3</td><td class="num">43.3</td></tr>
+                <tr><td>West</td><td class="num">48.3</td><td class="num">58.3</td><td class="num">43.3</td></tr>
+              </tbody>
+            </table>
+            <div class="result gold" style="margin-top:0.75rem;font-size:12.5px;">
+              <strong>Assumption check:</strong> All expected values ≥ 5 ✓ — chi-square assumption satisfied. Equal row totals mean expected frequencies are uniform across regions under H₀.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Preference rates by region (%)</div>
+          <div class="chart-box" style="height:240px">
+            <canvas id="c-chi" role="img" aria-label="Grouped bar chart showing product preference percentages by region. West has highest Premium preference at 34%, North lowest at 23%.">North: Economy 34.7%, Standard 42.0%, Premium 23.3%. South: 32%, 38.7%, 29.3%. West: 30%, 36%, 34%.</canvas>
+          </div>
+          <div class="region-legend">
+            <span><span class="dot" style="background:rgba(107,26,42,0.6)"></span>Economy</span>
+            <span><span class="dot" style="background:rgba(200,149,42,0.6)"></span>Standard</span>
+            <span><span class="dot" style="background:rgba(59,139,212,0.7)"></span>Premium</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div id="s3-result" class="tab-panel">
+        <div class="grid-4">
+          <div class="stat-card"><div class="stat-label">χ² statistic</div><div class="stat-value">7.15</div></div>
+          <div class="stat-card"><div class="stat-label">p-value</div><div class="stat-value" style="color:var(--success)">0.128</div></div>
+          <div class="stat-card"><div class="stat-label">df = (r−1)(c−1)</div><div class="stat-value">4</div></div>
+          <div class="stat-card"><div class="stat-label">Cramér's V</div><div class="stat-value">0.089</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Effect size interpretation — Cramér's V</div>
+          <div style="margin-bottom:6px;font-size:12px;color:var(--ink-3)">Convention benchmarks (df=min(r,c)−1 = 2):</div>
+          <div class="effect-bar" style="margin-top:4px">
+            <div class="effect-fill" style="width:8.9%;background:var(--maroon);font-size:11px">V=0.089</div>
+          </div>
+          <div class="effect-labels"><span>V = 0</span><span>Small (0.07)</span><span>Medium (0.21)</span><span>Large (0.35+)</span></div>
+          <div style="font-size:12.5px;color:var(--ink-3);margin-top:10px">Our V = 0.089 sits just above the "small" threshold — a negligible association even if real.</div>
+        </div>
+
+        <div class="result pass">
+          <p><strong>Statistical conclusion:</strong> χ²(4) = 7.15, p = 0.128 &gt; 0.05. We fail to reject H₀. There is insufficient evidence to conclude that product preference is associated with region at α = 0.05.</p>
+          <p><strong>Effect size:</strong> Cramér's V = 0.089 — even if the association is real, it is very small and of limited strategic importance.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Standardized residuals — where the action is</div>
+          <table class="data-table">
+            <thead><tr><th>Region</th><th>Economy (O−E)</th><th>Standard (O−E)</th><th>Premium (O−E)</th></tr></thead>
+            <tbody>
+              <tr><td>North</td><td class="num">+3.7</td><td class="num">+4.7</td><td class="num bad">−8.3</td></tr>
+              <tr><td>South</td><td class="num">−0.3</td><td class="num">−0.3</td><td class="num">+0.7</td></tr>
+              <tr><td>West</td><td class="num">−3.3</td><td class="num">−4.3</td><td class="num good">+7.7</td></tr>
+            </tbody>
+          </table>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:6px">North under-represents Premium; West over-represents it. Directionally interesting but not statistically significant at n=450.</div>
+        </div>
+      </div>
+
+      <!-- Strategy -->
+      <div id="s3-strategy" class="tab-panel">
+        <div class="card">
+          <div class="card-title">Premium preference by region</div>
+          <div class="chart-box" style="height:200px">
+            <canvas id="c-premium" role="img" aria-label="Horizontal bar chart showing Premium preference by region. West 34%, South 29.3%, North 23.3%.">West has highest Premium preference, North has lowest.</canvas>
+          </div>
+        </div>
+        <div class="result gold">
+          <p><strong>Business interpretation:</strong> While the chi-square test does not achieve statistical significance at n=450, West shows a 34% Premium preference vs. 23% in the North — an 11 percentage point gap worth investigating. The study may simply be underpowered to detect a real but small effect.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Power analysis — what sample size would we need?</div>
+          <div class="formula">
+<span class="comment"># To detect V = 0.089 with 80% power at α = 0.05:</span>
+<span class="comment"># n ≈ 850 total (vs. our 450) — nearly 2× our current sample</span>
+<span class="key">Recommendation:</span> Run a follow-up study with n ≥ 300 per region.
+<span class="key">Until confirmed:</span> Maintain standardized national product mix.
+<span class="key">Monitor:</span> West Premium sales as a leading strategy indicator.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ SECTION 4: ANOVA ════ -->
+    <div id="s4" class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">Part 4 · 20 Points</div>
+        <h2 class="section-title">One-Way ANOVA</h2>
+        <p class="section-desc">Determine whether average weekly sales differ across four regions — and use post-hoc analysis to identify which regions need attention.</p>
+      </div>
+
+      <div class="scenario">
+        <strong>Business scenario:</strong> Weekly sales ($000s) from 4 regions (Northeast, Southeast, Midwest, West) over 12 weeks. ANOVA tests whether at least one region mean differs. Tukey HSD post-hoc testing reveals which specific pairs are significantly different.
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('s4','explore',this)">Regional Overview</button>
+        <button class="tab-btn" onclick="showTab('s4','anova',this)">ANOVA Test</button>
+        <button class="tab-btn" onclick="showTab('s4','posthoc',this)">Tukey HSD</button>
+        <button class="tab-btn" onclick="showTab('s4','action',this)">Executive Action</button>
+      </div>
+
+      <!-- Explore -->
+      <div id="s4-explore" class="tab-panel active">
+        <div class="grid-4">
+          <div class="stat-card"><div class="stat-label">Northeast</div><div class="stat-value">$149.4K</div><div class="stat-sub">SD = $6.1K</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--danger)"><div class="stat-label">Southeast</div><div class="stat-value" style="color:var(--danger)">$130.7K</div><div class="stat-sub">SD = $3.9K</div></div>
+          <div class="stat-card"><div class="stat-label">Midwest</div><div class="stat-value">$140.4K</div><div class="stat-sub">SD = $2.8K</div></div>
+          <div class="stat-card" style="border-top:3px solid var(--success)"><div class="stat-label">West</div><div class="stat-value" style="color:var(--success)">$160.3K</div><div class="stat-sub">SD = $2.6K</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Regional distribution — weekly sales ($000s)</div>
+          <div class="chart-box" style="height:240px">
+            <canvas id="c-anova" role="img" aria-label="Scatter plot for four regions. West clearly highest around $160K, Southeast lowest around $130K, with Northeast and Midwest intermediate.">West ~$160K, Northeast ~$149K, Midwest ~$140K, Southeast ~$131K.</canvas>
+          </div>
+          <div class="region-legend">
+            <span><span class="dot" style="background:rgba(107,26,42,0.7)"></span>Northeast</span>
+            <span><span class="dot" style="background:rgba(200,149,42,0.7)"></span>Southeast</span>
+            <span><span class="dot" style="background:rgba(59,139,212,0.7)"></span>Midwest</span>
+            <span><span class="dot" style="background:rgba(29,158,117,0.7)"></span>West</span>
+          </div>
+        </div>
+
+        <div class="result gold">
+          <p><strong>Visual impression:</strong> West clearly leads; Southeast is substantially lower. The between-group spread looks much larger than the within-group scatter — a strong visual signal for ANOVA significance. Region appears to explain a very large proportion of total variance.</p>
+        </div>
+      </div>
+
+      <!-- ANOVA -->
+      <div id="s4-anova" class="tab-panel">
+        <div class="card">
+          <div class="card-title">ANOVA — partitioning total variance</div>
+          <div class="formula">
+<span class="comment"># ANOVA decomposes: Total SS = Between-group SS + Within-group SS</span>
+<span class="key">F</span> = Between-group MS / Within-group MS
+
+<span class="key">H₀:</span> <span class="val">μ_NE = μ_SE = μ_MW = μ_W</span>   <span class="comment"># All regions equal</span>
+<span class="key">Hₐ:</span> <span class="val">At least one μ differs</span>
+
+F_stat, p_val = scipy.stats.f_oneway(ne, se, mw, west)
+<span class="comment"># F(3,44) = 89.7,  p < 0.0001</span>
+η² = SS_between / SS_total = <span class="res">0.859</span></div>
+        </div>
+
+        <div class="grid-4">
+          <div class="stat-card"><div class="stat-label">F-statistic</div><div class="stat-value">89.7</div></div>
+          <div class="stat-card"><div class="stat-label">p-value</div><div class="stat-value" style="color:var(--danger)">&lt;0.001</div></div>
+          <div class="stat-card"><div class="stat-label">df (between/within)</div><div class="stat-value" style="font-size:16px">3 / 44</div></div>
+          <div class="stat-card"><div class="stat-label">η² (eta-squared)</div><div class="stat-value" style="color:var(--maroon)">0.859</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Effect size — η² = 0.859</div>
+          <div class="effect-bar">
+            <div class="effect-fill" style="width:85.9%;background:var(--maroon)">Region explains 85.9% of variance</div>
+          </div>
+          <div class="effect-labels"><span>Small (&gt;1%)</span><span>Medium (&gt;6%)</span><span>Large (&gt;14%)</span></div>
+          <div style="font-size:12.5px;color:var(--ink-3);margin-top:10px">η² = 0.859 is an extraordinarily large effect — region is a dominant driver of sales performance, not just a statistically detectable one.</div>
+        </div>
+
+        <div class="result reject">
+          <p><strong>Statistical conclusion:</strong> F(3,44) = 89.7, p &lt; 0.001. We reject H₀. At least one region mean is significantly different from the others.</p>
+          <p><strong>What ANOVA cannot tell us:</strong> The omnibus test only confirms "something differs." It does not identify which specific regions differ. Without post-hoc tests, we cannot say whether Northeast outperforms Midwest, or whether Southeast is uniquely poor. Tukey HSD is required.</p>
+        </div>
+      </div>
+
+      <!-- Post-hoc -->
+      <div id="s4-posthoc" class="tab-panel">
+        <div class="card">
+          <div class="card-title">Tukey HSD — all 6 pairwise comparisons (familywise α = 0.05)</div>
+          <table class="data-table">
+            <thead><tr><th>Comparison</th><th>Mean diff</th><th>p-adj (Tukey)</th><th>Sig?</th><th>95% CI</th></tr></thead>
+            <tbody>
+              <tr class="hl"><td>West vs Southeast</td><td class="good">+$29.6K</td><td class="bad">&lt;0.001</td><td class="good">✓ Yes</td><td class="muted">[$24.8K, $34.3K]</td></tr>
+              <tr class="hl"><td>West vs Midwest</td><td class="good">+$19.9K</td><td class="bad">&lt;0.001</td><td class="good">✓ Yes</td><td class="muted">[$15.1K, $24.7K]</td></tr>
+              <tr class="hl"><td>West vs Northeast</td><td class="good">+$10.9K</td><td class="bad">0.001</td><td class="good">✓ Yes</td><td class="muted">[$6.1K, $15.7K]</td></tr>
+              <tr class="hl"><td>NE vs Southeast</td><td class="good">+$18.7K</td><td class="bad">&lt;0.001</td><td class="good">✓ Yes</td><td class="muted">[$13.9K, $23.4K]</td></tr>
+              <tr class="hl"><td>Midwest vs Southeast</td><td class="good">+$9.7K</td><td class="bad">0.003</td><td class="good">✓ Yes</td><td class="muted">[$4.9K, $14.5K]</td></tr>
+              <tr><td>Northeast vs Midwest</td><td class="num">+$9.0K</td><td class="muted">0.051</td><td class="bad">✗ No (marginal)</td><td class="muted">[−$0.2K, $18.2K]</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Regional means with 95% confidence intervals</div>
+          <div class="chart-box" style="height:240px">
+            <canvas id="c-tukey" role="img" aria-label="Bar chart with error bars showing mean weekly sales for all four regions. West is highest at $160.3K, Southeast lowest at $130.7K.">West $160.3K, Northeast $149.4K, Midwest $140.4K, Southeast $130.7K.</canvas>
+          </div>
+          <div class="region-legend">
+            <span><span class="dot" style="background:rgba(107,26,42,0.7)"></span>Northeast (a)</span>
+            <span><span class="dot" style="background:rgba(200,149,42,0.7)"></span>Southeast (c)</span>
+            <span><span class="dot" style="background:rgba(59,139,212,0.7)"></span>Midwest (ab)</span>
+            <span><span class="dot" style="background:rgba(29,158,117,0.7)"></span>West (d)</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3)">Compact letter display: shared letters indicate no significant difference (Tukey α = 0.05)</div>
+        </div>
+      </div>
+
+      <!-- Action -->
+      <div id="s4-action" class="tab-panel">
+        <div class="grid-2">
+          <div class="card" style="border-top:3px solid var(--success)">
+            <div class="card-title">West — best practice model</div>
+            <div class="step"><div class="step-num">1</div><div class="step-body">Conduct process interviews; document what drives the $160K average systematically.</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body">Create a knowledge-transfer playbook. Identify top 3 differentiating behaviors.</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body">Pair West managers with Southeast as Q1 mentors. Set 90-day KPI of +$10K/week in Southeast.</div></div>
+          </div>
+          <div class="card" style="border-top:3px solid var(--danger)">
+            <div class="card-title">Southeast — immediate attention required</div>
+            <div class="step"><div class="step-num">1</div><div class="step-body">$29.6K/week below West = $1.54M annualized gap per region. Requires root cause analysis.</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body">On-site leadership assessment within 30 days. Separate structural from execution issues.</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body">Commission a territory and resource equity audit — gap may reflect structural disadvantage, not just performance.</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Revenue opportunity — if underperforming regions match West</div>
+          <table class="data-table">
+            <thead><tr><th>Region</th><th>Current avg/wk</th><th>Target (West)</th><th>Weekly uplift</th><th>Annual uplift</th></tr></thead>
+            <tbody>
+              <tr><td>Southeast</td><td class="num">$130.7K</td><td class="num">$160.3K</td><td class="num good">+$29.6K</td><td class="num good">+$1.54M</td></tr>
+              <tr><td>Midwest</td><td class="num">$140.4K</td><td class="num">$160.3K</td><td class="num good">+$19.9K</td><td class="num good">+$1.03M</td></tr>
+              <tr><td>Northeast</td><td class="num">$149.4K</td><td class="num">$160.3K</td><td class="num good">+$10.9K</td><td class="num good">+$0.57M</td></tr>
+              <tr class="hl"><td colspan="3"><strong>Total addressable uplift</strong></td><td class="good"><strong>+$60.4K/wk</strong></td><td class="good"><strong>+$3.14M/yr</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ SECTION 5: Concepts & Quiz ════ -->
+    <div id="s5" class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">Review · Knowledge Check</div>
+        <h2 class="section-title">Concepts &amp; Quiz</h2>
+        <p class="section-desc">Consolidate your understanding before submitting the homework. Five applied graduate-level questions.</p>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('s5','guide',this)">Test Selection Guide</button>
+        <button class="tab-btn" onclick="showTab('s5','assumptions',this)">Assumption Checks</button>
+        <button class="tab-btn" onclick="showTab('s5','quiz',this)">Knowledge Check</button>
+      </div>
+
+      <!-- Guide -->
+      <div id="s5-guide" class="tab-panel active">
+        <div class="card">
+          <div class="card-title">Decision framework — which inference test fits your problem?</div>
+          <div class="step"><div class="step-num">?</div><div class="step-body"><strong>What type of outcome variable?</strong> If numeric/continuous → t-test or ANOVA. If counts in categories → Chi-square. This is the first split.</div></div>
+          <div class="step"><div class="step-num">?</div><div class="step-body"><strong>How many groups?</strong> Two groups → t-test. Three or more → one-way ANOVA. Never run repeated pairwise t-tests — familywise Type I error explodes.</div></div>
+          <div class="step"><div class="step-num">?</div><div class="step-body"><strong>Independent or paired/matched data?</strong> Same subjects measured twice, or matched pairs → paired t. Different subjects in each group → independent t or ANOVA.</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Quick reference matrix</div>
+          <table class="data-table">
+            <thead><tr><th>Outcome variable</th><th>Groups</th><th>Design</th><th>Correct test</th></tr></thead>
+            <tbody>
+              <tr><td>Continuous (CLV, revenue)</td><td class="num">2</td><td>Independent samples</td><td class="good">Two-sample t-test</td></tr>
+              <tr><td>Continuous</td><td class="num">2</td><td>Paired / matched</td><td class="good">Paired t-test</td></tr>
+              <tr><td>Continuous</td><td class="num">3+</td><td>Independent samples</td><td class="good">One-way ANOVA + post-hoc</td></tr>
+              <tr><td>Categorical (counts)</td><td>Any</td><td>Cross-tabulated</td><td class="good">Chi-square test</td></tr>
+              <tr class="hl"><td colspan="3"><strong>Multiple t-tests instead of ANOVA</strong></td><td class="bad">❌ Never — inflates α</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Assumptions -->
+      <div id="s5-assumptions" class="tab-panel">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">t-tests (both types)</div>
+            <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Independence</strong> — observations do not influence each other within or between groups.</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Normality</strong> — each group is approximately normal. Relax with n ≥ 30 (CLT). Check with Q-Q plot or Shapiro-Wilk.</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Equal variance</strong> (independent t only) — Levene's test. If violated, use Welch's t (equal_var=False in scipy).</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">ANOVA</div>
+            <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Independence</strong> — within and between all groups.</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Normality</strong> — each group approximately normal. Q-Q plots for each region.</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Homogeneity of variance</strong> — Levene's test across all groups simultaneously (not pairwise).</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Chi-square (one critical assumption)</div>
+          <div class="result gold" style="margin:0;font-size:13.5px">
+            <p><strong>Expected cell frequencies ≥ 5 in every cell.</strong> This is non-negotiable. If violated: (1) combine sparse categories, (2) use Fisher's exact test for 2×2 tables, or (3) collect more data. Violations make the χ² approximation unreliable regardless of observed counts.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz -->
+      <div id="s5-quiz" class="tab-panel">
+        <div id="quiz-container"></div>
+        <button class="run-btn" id="quiz-next" onclick="nextQ()" style="display:none">Next question →</button>
+        <div class="quiz-score-box" id="quiz-score">
+          <div class="score-big" id="score-num">—</div>
+          <div class="score-sub" id="score-msg"></div>
+          <button class="run-btn" onclick="startQuiz()" style="margin-top:1.25rem">Retake quiz</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── Navigation ───────────────────────────────────────────
+let currentSection = 1;
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  currentSection = parseInt(id.replace('s',''));
+  document.getElementById('prog-pct').textContent = currentSection + ' / 5';
+  document.getElementById('prog-fill').style.width = (currentSection * 20) + '%';
+  if (id === 's1') initScatter();
+  if (id === 's2') { initPaired(); updateCorr(); updateROI(); }
+  if (id === 's3') { initChi(); initPremium(); }
+  if (id === 's4') { initAnova(); initTukey(); }
+  if (id === 's5') startQuiz();
+}
+
+function showTab(section, tab, btn) {
+  const prefix = section + '-';
+  const allPanels = document.querySelectorAll('#'+section+' .tab-panel');
+  allPanels.forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#'+section+' .tab-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById(prefix + tab);
+  if (panel) { panel.classList.add('active'); }
+  btn.classList.add('active');
+  if (section==='s1' && tab==='simulator') initTDist();
+}
+
+// ── Chart refs ───────────────────────────────────────────
+let charts = {};
+function destroyChart(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+// ── Section 1: Scatter ───────────────────────────────────
+function initScatter() {
+  destroyChart('scatter');
+  const ctx = document.getElementById('c-scatter');
+  if (!ctx) return;
+  const trad = [2850,3200,2900,3500,2750,3100,3400,2650,3300,3000,2900,3600,2800,3200,3100,2700,3400,3050,2950,3350,3500,2850,3150,2950,3250,3000,3450,2750,3300,3100,2900,3250,3000,3550,2800,3100,3350,2900,3200,3050];
+  const digi = [3100,3400,3200,3700,3000,3350,3600,2900,3500,3250,3150,3800,3050,3450,3300,2950,3650,3200,3150,3550,3750,3100,3400,3150,3500,3250,3700,3000,3550,3350,3150,3500,3250,3800,3050,3350,3600,3150,3450,3300];
+  charts['scatter'] = new Chart(ctx, {
+    type:'scatter',
+    data:{datasets:[
+      {label:'Traditional',data:trad.map(y=>({x:1+(Math.random()-.5)*.4,y})),backgroundColor:'rgba(107,26,42,0.55)',pointRadius:5,pointHoverRadius:7},
+      {label:'Digital',data:digi.map(y=>({x:2+(Math.random()-.5)*.4,y})),backgroundColor:'rgba(200,149,42,0.65)',pointRadius:5,pointHoverRadius:7},
+      {label:'T-mean',data:[{x:1,y:3093}],backgroundColor:'#6B1A2A',pointRadius:10,pointStyle:'triangle',pointHoverRadius:12},
+      {label:'D-mean',data:[{x:2,y:3343}],backgroundColor:'#C8952A',pointRadius:10,pointStyle:'triangle',pointHoverRadius:12}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+      x:{min:.3,max:2.7,grid:{display:false},ticks:{callback:v=>Math.abs(v-1)<.4?'Traditional':Math.abs(v-2)<.4?'Digital':'',stepSize:.5}},
+      y:{title:{display:true,text:'CLV ($)',font:{size:11}},ticks:{callback:v=>'$'+v.toLocaleString()}}
+    }}
+  });
+}
+
+// ── TDist ────────────────────────────────────────────────
+let tdistChart = null;
+function initTDist() {
+  updateSim();
+}
+
+function normPDF(x){return Math.exp(-.5*x*x)/Math.sqrt(2*Math.PI);}
+
+function updateSim() {
+  const mu1 = +document.getElementById('sim-mu1').value;
+  const mu2 = +document.getElementById('sim-mu2').value;
+  const n   = +document.getElementById('sim-n').value;
+  const sd  = +document.getElementById('sim-sd').value;
+  document.getElementById('sim-mu1-v').textContent = '$'+mu1.toLocaleString();
+  document.getElementById('sim-mu2-v').textContent = '$'+mu2.toLocaleString();
+  document.getElementById('sim-n-v').textContent = n;
+  document.getElementById('sim-sd-v').textContent = '$'+sd.toLocaleString();
+  const se = sd*Math.sqrt(2/n);
+  const t  = (mu2-mu1)/se;
+  const d  = Math.abs(mu2-mu1)/sd;
+  const p  = 2*Math.min(normalCDF(t), normalCDF(-t));
+  document.getElementById('sim-t-out').textContent = t.toFixed(2);
+  document.getElementById('sim-d-out').textContent = d.toFixed(2);
+  document.getElementById('sim-p-out').textContent = p<.0001?'<0.0001':p.toFixed(4);
+  document.getElementById('sim-p-out').style.color = p<.05?'var(--danger)':'var(--success)';
+  const rej = p<.05;
+  document.getElementById('sim-dec-out').textContent = rej?'Reject H₀':'Fail to reject';
+  document.getElementById('sim-dec-out').style.color = rej?'var(--danger)':'var(--success)';
+  drawTDist(Math.abs(t));
+}
+
+function normalCDF(z) {
+  const a1=.254829592,a2=-.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=.3275911;
+  const sign = z<0?-1:1; z=Math.abs(z)/Math.sqrt(2);
+  const t2=1/(1+p*z);
+  const y=1-(((((a5*t2+a4)*t2+a3)*t2+a2)*t2+a1)*t2)*Math.exp(-z*z);
+  return .5*(1+sign*y);
+}
+
+function drawTDist(tObs) {
+  const ctx = document.getElementById('c-tdist');
+  if (!ctx) return;
+  if (tdistChart) tdistChart.destroy();
+  const xs=[], yFull=[], yRej=[];
+  const crit = 1.96;
+  for(let x=-4;x<=4;x+=.05){
+    xs.push(+x.toFixed(2));
+    const y = normPDF(x);
+    yFull.push({x,y});
+    yRej.push({x, y: Math.abs(x)>crit?y:null});
+  }
+  const obsLine1=[{x:tObs,y:0},{x:tObs,y:normPDF(tObs)+.01}];
+  const obsLine2=[{x:-tObs,y:0},{x:-tObs,y:normPDF(tObs)+.01}];
+  tdistChart = new Chart(ctx, {
+    type:'scatter',
+    data:{datasets:[
+      {label:'dist',data:yFull,showLine:true,borderColor:'#B0A8A5',borderWidth:1.5,pointRadius:0,fill:false},
+      {label:'reject',data:yRej,showLine:true,borderColor:'rgba(163,45,45,0)',backgroundColor:'rgba(163,45,45,0.18)',pointRadius:0,fill:'origin'},
+      {label:'obs+',data:obsLine1,showLine:true,borderColor:'#6B1A2A',borderWidth:2,pointRadius:0,fill:false,borderDash:[5,3]},
+      {label:'obs-',data:obsLine2,showLine:true,borderColor:'#6B1A2A',borderWidth:2,pointRadius:0,fill:false,borderDash:[5,3]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+      x:{title:{display:true,text:'t-statistic',font:{size:11}}},
+      y:{display:false}
+    }}
+  });
+}
+
+// ── Section 2 ────────────────────────────────────────────
+function initPaired() {
+  destroyChart('paired');
+  const ctx = document.getElementById('c-paired');
+  if (!ctx) return;
+  const before=[42,38,45,41,39,44,37,46,40,43,41,47,39,44,42,38,45,41,40,44,46,39,43,40,44,41,45,38,43,42];
+  const after =[45,41,48,44,42,47,40,49,43,46,44,50,42,47,45,41,48,44,43,47,49,42,46,43,47,44,48,41,46,45];
+  const datasets = before.map((b,i)=>({
+    label:'SP'+(i+1),
+    data:[{x:'Before',y:b},{x:'After',y:after[i]}],
+    showLine:true,borderColor:'rgba(107,26,42,0.2)',borderWidth:1.2,
+    pointRadius:3,pointBackgroundColor:'rgba(107,26,42,0.45)',fill:false
+  }));
+  charts['paired'] = new Chart(ctx, {
+    type:'scatter',
+    data:{datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+      x:{type:'category',labels:['Before','After'],grid:{display:false}},
+      y:{title:{display:true,text:'Monthly sales ($K)',font:{size:11}},min:34,max:52}
+    }}
+  });
+}
+
+function updateCorr() {
+  const r = document.getElementById('corr-r').value / 10;
+  document.getElementById('corr-r-v').textContent = 'r = '+r.toFixed(1);
+  if (r >= 1) {
+    document.getElementById('eff-bar').textContent = '∞ relative efficiency';
+    document.getElementById('eff-bar').style.width = '100%';
+    return;
+  }
+  if (r <= -1) {
+    document.getElementById('eff-bar').textContent = 'Pairing is harmful';
+    document.getElementById('eff-bar').style.width = '10%';
+    document.getElementById('eff-bar').style.background = 'var(--danger)';
+    return;
+  }
+  const eff = 1/(1-r*r);
+  const pct = Math.min(((eff-1)*100), 900);
+  const w = Math.min(50+pct/10, 100);
+  document.getElementById('eff-bar').style.width = w+'%';
+  document.getElementById('eff-bar').style.background = r>0?'var(--maroon)':'var(--danger)';
+  document.getElementById('eff-bar').textContent = r>0 ? '+'+pct.toFixed(0)+'% relative efficiency' : 'Pairing hurts (r<0)';
+}
+
+function updateROI() {
+  const imp  = +document.getElementById('roi-imp').value;
+  const cost = +document.getElementById('roi-cost').value;
+  const n    = +document.getElementById('roi-n').value;
+  document.getElementById('roi-imp-v').textContent = '$'+imp+'K';
+  document.getElementById('roi-cost-v').textContent = '$'+cost.toLocaleString();
+  document.getElementById('roi-n-v').textContent = n+' people';
+  const total = cost*n;
+  const monthly = imp*1000*n;
+  const be = total/monthly;
+  const net = monthly*12 - total;
+  document.getElementById('roi-tot-cost').textContent = '$'+(total/1000).toFixed(0)+'K';
+  document.getElementById('roi-mo-gain').textContent = '$'+(monthly/1000000).toFixed(2)+'M';
+  document.getElementById('roi-be').textContent = be.toFixed(2)+' mo';
+  document.getElementById('roi-net').textContent = '$'+(net/1000000).toFixed(2)+'M';
+}
+
+// ── Section 3 ────────────────────────────────────────────
+function initChi() {
+  destroyChart('chi');
+  const ctx = document.getElementById('c-chi');
+  if (!ctx) return;
+  charts['chi'] = new Chart(ctx, {
+    type:'bar',
+    data:{labels:['North','South','West'],datasets:[
+      {label:'Economy %',data:[34.7,32.0,30.0],backgroundColor:'rgba(107,26,42,0.6)',borderRadius:4,borderSkipped:false},
+      {label:'Standard %',data:[42.0,38.7,36.0],backgroundColor:'rgba(200,149,42,0.6)',borderRadius:4,borderSkipped:false},
+      {label:'Premium %', data:[23.3,29.3,34.0],backgroundColor:'rgba(59,139,212,0.7)',borderRadius:4,borderSkipped:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+      x:{grid:{display:false}},
+      y:{title:{display:true,text:'Preference (%)',font:{size:11}},max:50,ticks:{callback:v=>v+'%'}}
+    }}
+  });
+}
+
+function initPremium() {
+  destroyChart('premium');
+  const ctx = document.getElementById('c-premium');
+  if (!ctx) return;
+  charts['premium'] = new Chart(ctx, {
+    type:'bar',
+    data:{labels:['North','South','West'],datasets:[{
+      label:'Premium %',data:[23.3,29.3,34.0],
+      backgroundColor:['rgba(107,26,42,0.55)','rgba(200,149,42,0.6)','rgba(59,139,212,0.7)'],
+      borderRadius:4, borderSkipped:false
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{
+      x:{min:0,max:45,ticks:{callback:v=>v+'%'},title:{display:true,text:'% choosing Premium',font:{size:11}}},
+      y:{grid:{display:false}}
+    }}
+  });
+}
+
+// ── Section 4 ────────────────────────────────────────────
+function initAnova() {
+  destroyChart('anova');
+  const ctx = document.getElementById('c-anova');
+  if (!ctx) return;
+  const ne=[145,152,138,161,149,144,158,151,143,155,147,150];
+  const se=[132,128,135,130,125,138,129,133,127,131,134,126];
+  const mw=[141,138,145,139,142,137,144,140,136,143,139,141];
+  const we=[155,162,158,165,159,161,157,164,160,163,158,161];
+  charts['anova'] = new Chart(ctx, {
+    type:'scatter',
+    data:{datasets:[
+      {label:'NE',data:ne.map(y=>({x:1+(Math.random()-.5)*.35,y})),backgroundColor:'rgba(107,26,42,0.7)',pointRadius:6},
+      {label:'SE',data:se.map(y=>({x:2+(Math.random()-.5)*.35,y})),backgroundColor:'rgba(200,149,42,0.7)',pointRadius:6},
+      {label:'MW',data:mw.map(y=>({x:3+(Math.random()-.5)*.35,y})),backgroundColor:'rgba(59,139,212,0.7)',pointRadius:6},
+      {label:'W', data:we.map(y=>({x:4+(Math.random()-.5)*.35,y})),backgroundColor:'rgba(29,158,117,0.7)',pointRadius:6},
+      {label:'Means',data:[{x:1,y:149.4},{x:2,y:130.7},{x:3,y:140.4},{x:4,y:160.3}],backgroundColor:'#1C1410',pointRadius:11,pointStyle:'crossRot'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+      x:{min:.3,max:4.7,grid:{display:false},ticks:{callback:v=>({1:'NE',2:'SE',3:'MW',4:'W'}[Math.round(v)]||''),stepSize:.5}},
+      y:{title:{display:true,text:'Weekly sales ($K)',font:{size:11}},min:118,max:172}
+    }}
+  });
+}
+
+function initTukey() {
+  destroyChart('tukey');
+  const ctx = document.getElementById('c-tukey');
+  if (!ctx) return;
+  charts['tukey'] = new Chart(ctx, {
+    type:'bar',
+    data:{labels:['Northeast','Southeast','Midwest','West'],datasets:[{
+      label:'Mean weekly sales ($K)',
+      data:[149.4,130.7,140.4,160.3],
+      backgroundColor:['rgba(107,26,42,0.65)','rgba(200,149,42,0.65)','rgba(59,139,212,0.65)','rgba(29,158,117,0.65)'],
+      borderRadius:6, borderSkipped:false
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+      x:{grid:{display:false}},
+      y:{min:115,max:172,title:{display:true,text:'Weekly sales ($K)',font:{size:11}}}
+    }}
+  });
+}
+
+// ── Quiz ─────────────────────────────────────────────────
+const quizData = [
+  {q:"A company measures website session duration for 50 users under both old and new layouts (same users, both versions). Which test is most appropriate?",
+   opts:["Two-sample independent t-test","Paired t-test","One-way ANOVA","Chi-square test"],
+   answer:1,
+   fb:"Correct! The same 50 users experience both layouts — a paired/repeated-measures design. Pairing removes between-user variability (some people are naturally longer browsers), isolating the effect of the layout change. Independent t would inflate the error term with irrelevant individual differences."},
+  {q:"An ANOVA returns F(3,44) = 89.7, p < 0.001, η² = 0.859. What can you definitively conclude?",
+   opts:["All four group means are significantly different from each other","At least one region mean differs; effect is very large; post-hoc tests are needed to identify which pairs","The largest group is significantly better than the smallest","We can identify which specific pairs differ without further testing"],
+   answer:1,
+   fb:"ANOVA is an omnibus test — it confirms 'something differs' but not which pairs. η² = 0.859 indicates region explains 85.9% of total variance (extremely large effect). Tukey HSD or similar post-hoc correction is required to make specific pairwise claims while controlling familywise error."},
+  {q:"Your chi-square test returns χ²(4) = 7.15, p = 0.128, Cramér's V = 0.089. What is the most complete and accurate conclusion?",
+   opts:["There is a significant association between region and preference","We fail to reject H₀ at α=0.05; the observed pattern is consistent with independence; any association is very small","The variables are proven to be independent","The test result is inconclusive — rerun with more categories"],
+   answer:1,
+   fb:"p = 0.128 > 0.05 means we fail to reject H₀ — insufficient evidence of association at this sample size. Failing to reject ≠ proving independence. V = 0.089 is below even the 'small' threshold, suggesting any real association would be practically negligible. The study may also be underpowered for this effect size."},
+  {q:"You run 5 separate t-tests comparing all pairs from a 4-group ANOVA instead of using Tukey HSD. With α = 0.05 per test, approximately what is the probability of at least one false positive?",
+   opts:["5% — alpha controls the error rate","About 11%","About 23%","About 40%"],
+   answer:2,
+   fb:"Familywise error rate = 1 − (0.95)⁵ ≈ 0.226 ≈ 23%. This is why one-way ANOVA followed by Tukey HSD exists — it tests the omnibus hypothesis first, then controls familywise α across all pairwise comparisons simultaneously. Running uncorrected t-tests triples your actual error rate."},
+  {q:"The 95% confidence interval for the difference in means (Digital − Traditional CLV) is [$149, $350]. What can you conclude about the hypothesis test at α = 0.05?",
+   opts:["p > 0.05; we fail to reject H₀","p < 0.05; we reject H₀ — the CI excludes $0","We need the actual p-value to make a decision","The interval is too wide to draw any conclusion"],
+   answer:1,
+   fb:"A 95% CI that entirely excludes the null value ($0 difference) is exactly equivalent to rejecting H₀ at α = 0.05 (two-tailed). The CI and hypothesis test are dual formulations of the same inference. If $0 were inside the interval, we would fail to reject. No additional p-value calculation is needed — they carry identical information."}
+];
+
+let qIdx = 0, qScore = 0;
+function startQuiz() {
+  qIdx=0; qScore=0;
+  document.getElementById('quiz-score').style.display='none';
+  document.getElementById('quiz-next').style.display='none';
+  renderQ();
+}
+function renderQ() {
+  if (qIdx >= quizData.length) { showScore(); return; }
+  const q = quizData[qIdx];
+  let html = '<div class="card"><div class="quiz-num">Question '+(qIdx+1)+' of '+quizData.length+'</div>';
+  html += '<div class="quiz-q">'+q.q+'</div><div class="quiz-opts">';
+  q.opts.forEach((o,i)=>{html+='<button class="quiz-opt-btn" onclick="answerQ('+i+')">'+String.fromCharCode(65+i)+'. '+o+'</button>';});
+  html += '</div><div class="quiz-feedback" id="q-fb">'+q.fb+'</div></div>';
+  document.getElementById('quiz-container').innerHTML=html;
+  document.getElementById('quiz-next').style.display='none';
+}
+function answerQ(i) {
+  const q = quizData[qIdx];
+  document.querySelectorAll('.quiz-opt-btn').forEach((b,idx)=>{
+    b.disabled=true;
+    if(idx===q.answer)b.classList.add('correct');
+    else if(idx===i&&i!==q.answer)b.classList.add('wrong');
+  });
+  if(i===q.answer) qScore++;
+  document.getElementById('q-fb').classList.add('show');
+  if(qIdx < quizData.length-1) document.getElementById('quiz-next').style.display='inline-flex';
+  else setTimeout(showScore,1800);
+}
+function nextQ() { qIdx++; renderQ(); }
+function showScore() {
+  document.getElementById('quiz-container').innerHTML='';
+  document.getElementById('quiz-next').style.display='none';
+  const pct = Math.round(qScore/quizData.length*100);
+  const msg = pct>=80 ? '— Strong conceptual understanding. You are well-prepared for the assignment.' : '— Review the sections above and revisit the interactive simulators before submitting.';
+  document.getElementById('score-num').textContent = qScore+'/'+quizData.length;
+  document.getElementById('score-msg').textContent = pct+'% correct '+msg;
+  document.getElementById('quiz-score').style.display='block';
+}
+
+// ── Boot ─────────────────────────────────────────────────
+window.addEventListener('load', ()=>{
+  initScatter();
+  updateROI();
+  updateCorr();
+});
+</script>
+</body>
+</html>
